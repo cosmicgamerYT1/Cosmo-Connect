@@ -222,6 +222,11 @@ body{font-family:var(--font);font-size:15px;color:var(--text1);-webkit-font-smoo
 /* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg1);border:1px solid var(--bg4);border-radius:8px;padding:12px 16px;color:var(--text1);font-size:14px;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:9999;animation:slideUp .25s ease-out;max-width:340px;display:flex;align-items:center;gap:10px}
 .toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--accent2)}
+.owner-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle;margin-left:6px;box-shadow:0 2px 8px rgba(245,158,11,.4)}
+.av-photo{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.av-edit-ring{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;cursor:pointer;font-size:11px;font-weight:700;color:#fff;flex-direction:column;gap:2px}
+.av-wrap:hover .av-edit-ring{opacity:1}
+.av-wrap{position:relative;flex-shrink:0;cursor:pointer}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
@@ -336,12 +341,13 @@ body{font-family:var(--font);font-size:15px;color:var(--text1);-webkit-font-smoo
 
 <div id="m-invite" class="mbg hidden"><div class="modal"><div class="mx" onclick="closeM('m-invite')">✕</div><div class="mhead"><h2>Invite People</h2><p>Share this code with friends.</p></div><div class="mbody"><label class="flbl">Invite Code</label><div style="display:flex;gap:8px"><input class="finput" id="inv-code" readonly style="flex:1;font-family:var(--mono)"/><button class="btn" onclick="copyInv()">Copy</button></div></div></div></div>
 
-<div id="m-settings" class="mbg hidden"><div class="modal" style="max-width:480px"><div class="mx" onclick="closeM('m-settings')">✕</div><div class="mhead"><h2>⚙️ Settings</h2></div><div class="mbody"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg2);border-radius:8px;margin-bottom:20px"><div class="ava" id="set-av" style="width:60px;height:60px;font-size:22px;border-radius:50%"></div><div><div style="font-size:18px;font-weight:800" id="set-nm">Username</div><div style="color:var(--text3);font-size:13px" id="set-em"></div></div></div><div class="fw"><label class="flbl">Display Name</label><input class="finput" id="set-uname" maxlength="32"/></div><div class="fw"><label class="flbl">Status</label><select class="finput" id="set-status"><option value="ONLINE">🟢 Online</option><option value="IDLE">🌙 Idle</option><option value="DND">⛔ Do Not Disturb</option><option value="INVISIBLE">⚫ Invisible</option></select></div></div><div class="mfoot" style="justify-content:space-between"><button class="btn red" onclick="doLogout()">Log Out</button><div style="display:flex;gap:8px"><button class="bghost" onclick="closeM('m-settings')">Cancel</button><button class="btn" onclick="saveSett()">Save</button></div></div></div></div>
+<div id="m-settings" class="mbg hidden"><div class="modal" style="max-width:480px"><div class="mx" onclick="closeM('m-settings')">✕</div><div class="mhead"><h2>⚙️ Settings</h2></div><div class="mbody"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg2);border-radius:8px;margin-bottom:20px"><div class="av-wrap" onclick="pickAvatar()" title="Click to change profile picture"><div class="ava" id="set-av" style="width:60px;height:60px;font-size:22px;border-radius:50%"></div><div class="av-edit-ring">📷<span style="font-size:9px">CHANGE</span></div></div><input type="file" id="av-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(event)"/><div><div style="font-size:18px;font-weight:800" id="set-nm">Username</div><div style="color:var(--text3);font-size:13px" id="set-em"></div><div id="set-owner-badge"></div></div></div><div class="fw"><label class="flbl">Display Name</label><input class="finput" id="set-uname" maxlength="32"/></div><div class="fw"><label class="flbl">Status</label><select class="finput" id="set-status"><option value="ONLINE">🟢 Online</option><option value="IDLE">🌙 Idle</option><option value="DND">⛔ Do Not Disturb</option><option value="INVISIBLE">⚫ Invisible</option></select></div></div><div class="mfoot" style="justify-content:space-between"><button class="btn red" onclick="doLogout()">Log Out</button><div style="display:flex;gap:8px"><button class="bghost" onclick="closeM('m-settings')">Cancel</button><button class="btn" onclick="saveSett()">Save</button></div></div></div></div>
 
 <div id="m-del" class="mbg hidden"><div class="modal" style="max-width:400px"><div class="mx" onclick="closeM('m-del')">✕</div><div class="mhead"><h2>Delete Message</h2><p>Are you sure? This cannot be undone.</p></div><div class="mfoot"><button class="bghost" onclick="closeM('m-del')">Cancel</button><button class="btn red" onclick="confirmDel()">Delete</button></div></div></div>
 
 <script>
 // ─── All globals ───────────────────────────────────────────────────────
+var OWNER_EMAIL = 'liambaker201411@hotmail.com';
 var ME=null,MYUID=null,SERVERS=[],ACT_SRV=null,ACT_CH=null,ACT_CHT='TEXT',ACT_DM=null;
 var MSGS=[],MSG_REFS=[],TYP_REFS=[],MEMBERS={},DM_CHS=[];
 var REPLY_TO=null,DEL_ID=null,MUTED=false,ML_ON=true,EP_OPEN=false,FTAB='online';
@@ -368,8 +374,18 @@ function setAv(el,u,sz){
   el.style.width=sz+'px';el.style.height=sz+'px';
   el.style.fontSize=Math.floor(sz*.4)+'px';el.style.borderRadius='50%';
   el.style.background=(u&&u.avatarColor)||avc((u&&u.id)||'');
-  el.textContent=ini(u&&u.username);
+  if(u&&u.avatarUrl){
+    el.innerHTML='';
+    var img=document.createElement('img');img.src=u.avatarUrl;img.className='av-photo';
+    img.onerror=function(){el.innerHTML='';el.textContent=ini(u&&u.username);};
+    el.appendChild(img);
+  } else {
+    el.textContent=ini(u&&u.username);
+  }
 }
+function isOwnerEmail(email){ return email && email.toLowerCase()==='liambaker201411@hotmail.com'; }
+function isOwner(u){ return u && (isOwnerEmail(u.email) || (AUTH&&AUTH.currentUser&&isOwnerEmail(AUTH.currentUser.email)&&u.id===MYUID)); }
+function ownerBadgeHTML(){ return '<span class="owner-badge">👑 Owner</span>'; }
 
 function fmtC(t){
   if(!t)return'';var s=esc(t);
@@ -607,7 +623,7 @@ function renderDMSidebar(){
     var av=mk('div','ava avasml');av.style.background=avc(oid||dm.id);av.textContent='?';
     var nm=mk('span','trunc');nm.textContent='DM';
     r.appendChild(av);r.appendChild(nm);r.onclick=(function(d){return function(){openDMCh(d);};})(dm);list.appendChild(r);
-    if(oid)fetchUser(oid,function(u){if(u){nm.textContent=u.username;av.style.background=u.avatarColor||avc(oid);av.textContent=ini(u.username);}});
+    if(oid)fetchUser(oid,function(u){if(u){nm.textContent=u.username;av.style.background=u.avatarColor||avc(oid);if(u.avatarUrl){var ai=mk('img');ai.src=u.avatarUrl;ai.className='av-photo';av.innerHTML='';av.appendChild(ai);}else{av.textContent=ini(u.username);}}});
   });
 }
 
@@ -694,13 +710,16 @@ function mkMEl(msg,ns,ts){
   row.appendChild(tb);
   if(ns){
     var av=mk('div','mav');av.style.cssText='width:40px;height:40px;flex-shrink:0;font-size:15px;border-radius:50%';
-    av.style.background=auth.avatarColor||avc(msg.authorId);av.textContent=ini(auth.username);row.appendChild(av);
+    av.style.background=auth.avatarColor||avc(msg.authorId);
+    if(auth.avatarUrl){var ai=mk('img');ai.src=auth.avatarUrl;ai.className='av-photo';ai.onerror=function(){av.removeChild(ai);av.textContent=ini(auth.username);};av.appendChild(ai);}
+    else{av.textContent=ini(auth.username);}
+    row.appendChild(av);
   } else {
     var sp=mk('div','cspc'),ct=mk('span','ctm');ct.textContent=fmtT(ts);sp.appendChild(ct);row.appendChild(sp);
   }
   var body=mk('div','mbody');
   if(msg.replyToId&&msg.replyContent){var rp=mk('div','mrply');rp.innerHTML='<span class="mrply-auth">'+esc(msg.replyAuthor||'User')+'</span> <span>'+esc(String(msg.replyContent||'')).slice(0,80)+'</span>';body.appendChild(rp);}
-  if(ns){var meta=mk('div','mmeta'),an=mk('span','mauth'),at=mk('span','mtime');an.textContent=auth.username;an.style.color=auth.avatarColor||'var(--accent2)';at.textContent=fmtT(ts);meta.appendChild(an);meta.appendChild(at);body.appendChild(meta);}
+  if(ns){var meta=mk('div','mmeta'),an=mk('span','mauth'),at=mk('span','mtime');an.textContent=auth.username;an.style.color=auth.avatarColor||'var(--accent2)';at.textContent=fmtT(ts);meta.appendChild(an);if(isOwnerEmail(auth.email)){var ob=mk('span','owner-badge');ob.innerHTML='&#128081; Owner';meta.appendChild(ob);}meta.appendChild(at);body.appendChild(meta);}
   if(msg.deleted){body.appendChild(mk('p','mcont del','[message deleted]'));}
   else if(msg.content){var p=mk('p','mcont');p.innerHTML=fmtC(msg.content);if(msg.editedAt){var ed=mk('span','medit','(edited)');p.appendChild(ed);}body.appendChild(p);}
   addReacts(body,msg);row.appendChild(body);return row;
@@ -872,7 +891,10 @@ function mkMRow(u){
   var r=mk('div','mrow');
   var av=mk('div','ava avasml');av.style.cssText='position:relative;flex-shrink:0';av.style.background=u.avatarColor||avc(u.id);av.textContent=ini(u.username);
   var dot=mk('div','avadot s-'+String(u.status||'offline').toLowerCase());av.appendChild(dot);r.appendChild(av);
-  var info=mk('div');info.style.flex='1';info.appendChild(mk('div','mname trunc',u.username));
+  var info=mk('div');info.style.flex='1';
+  var nmEl=mk('div','mname trunc');nmEl.textContent=u.username;
+  if(isOwnerEmail(u.email)){var ob2=mk('span','owner-badge');ob2.innerHTML='&#128081;';ob2.style.marginLeft='4px';nmEl.appendChild(ob2);}
+  info.appendChild(nmEl);
   if(u.status&&u.status!=='OFFLINE')info.appendChild(mk('div','mstatus',u.status.toLowerCase()));
   r.appendChild(info);r.onclick=(function(user){return function(){showUserCtx(user);};})(u);return r;
 }
@@ -934,7 +956,35 @@ function decFriend(tid){DB.ref('friends/'+MYUID+'/'+tid).remove();DB.ref('friend
 function rmFriend(tid,uname){if(!confirm('Remove '+uname+' from friends?'))return;DB.ref('friends/'+MYUID+'/'+tid).remove();DB.ref('friends/'+tid+'/'+MYUID).remove();toast('Friend removed','ok');ftab('all');}
 
 // ─── SETTINGS ─────────────────────────────────────────────────────────
-function openSettings(){if(!ME)return;setAv(g('set-av'),ME,60);g('set-nm').textContent=ME.username;g('set-em').textContent=AUTH.currentUser?AUTH.currentUser.email:'';g('set-uname').value=ME.username;g('set-status').value=ME.status||'ONLINE';}
+function openSettings(){
+  if(!ME)return;
+  setAv(g('set-av'),ME,60);
+  var dispName=ME.username;
+  var badge=g('set-owner-badge');
+  if(badge){badge.innerHTML=isOwnerEmail(AUTH.currentUser&&AUTH.currentUser.email)?ownerBadgeHTML():'';}
+  g('set-nm').innerHTML=esc(dispName)+(isOwnerEmail(AUTH.currentUser&&AUTH.currentUser.email)?ownerBadgeHTML():'');
+  g('set-em').textContent=AUTH.currentUser?AUTH.currentUser.email:'';
+  g('set-uname').value=ME.username;
+  g('set-status').value=ME.status||'ONLINE';
+}
+function pickAvatar(){ g('av-file-input').click(); }
+function handleAvatarFile(e){
+  var file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('Image too large — max 2MB','err');return;}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var b64=ev.target.result;
+    ME.avatarUrl=b64;
+    DB.ref('users/'+MYUID).update({avatarUrl:b64});
+    DB.ref('presence/'+MYUID).update({avatarUrl:b64});
+    setAv(g('set-av'),ME,60);
+    setAv(g('up-av'),ME,32);
+    toast('Profile picture updated!','ok');
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
 function saveSett(){var name=gv('set-uname'),status=gv('set-status');if(!name||name.length<2)return toast('Username must be 2+ characters','err');DB.ref('users/'+MYUID).update({username:name,status:status});DB.ref('presence/'+MYUID).update({status:status,username:name});ME.username=name;ME.status=status;updatePanel();closeM('m-settings');toast('Settings saved!','ok');}
 function toggleMute(){MUTED=!MUTED;g('mute-btn').classList.toggle('muted',MUTED);toast(MUTED?'🔇 Muted':'🔊 Unmuted','info');}
 
