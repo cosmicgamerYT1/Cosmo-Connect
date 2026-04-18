@@ -40,6 +40,29 @@ try {
   --text1:#e8eaed;--text2:#b0b3bc;--text3:#72767d;--text4:#565960;
   --font:'Segoe UI',system-ui,sans-serif;--mono:Consolas,'Courier New',monospace;--r:6px;
 }
+/* ── LIGHT MODE ── */
+body.theme-light{
+  --bg1:#f2f3f5;--bg2:#e3e5e8;--bg3:#ffffff;--bg4:#d4d7dc;--bg5:#c4c9d4;
+  --text1:#060607;--text2:#4e5058;--text3:#6d6f78;--text4:#8e9297;
+}
+body.theme-light .mgrp:hover{background:rgba(0,0,0,.04)}
+body.theme-light .abtn{box-shadow:0 4px 20px rgba(124,92,191,.25)}
+body.theme-light .acard{background:rgba(255,255,255,.97);border-color:rgba(124,92,191,.2)}
+/* ── VOID MODE ── */
+body.theme-void{
+  --bg1:#000000;--bg2:#050505;--bg3:#0a0a0a;--bg4:#111111;--bg5:#1a1a1a;
+  --text1:#e8eaed;--text2:#9aa0a6;--text3:#5f6368;--text4:#3c4043;
+}
+body.theme-void .mgrp:hover{background:rgba(255,255,255,.025)}
+body.theme-void .acard{background:rgba(5,5,5,.98);border-color:rgba(124,92,191,.2)}
+
+/* Theme selector visual pills */
+.theme-opts{display:flex;gap:8px;margin-top:4px}
+.theme-opt{flex:1;padding:10px 8px;border-radius:var(--r);border:2px solid var(--bg4);cursor:pointer;text-align:center;transition:border-color .15s,transform .1s;user-select:none}
+.theme-opt:hover{border-color:var(--accent2);transform:translateY(-1px)}
+.theme-opt.active{border-color:var(--accent2);background:rgba(155,121,224,.12)}
+.theme-opt .to-ico{font-size:20px;margin-bottom:4px}
+.theme-opt .to-lbl{font-size:11px;font-weight:700;color:var(--text2)}
 html,body{height:100%;overflow:hidden;background:var(--bg1)}
 body{font-family:var(--font);font-size:15px;color:var(--text1);-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -374,7 +397,7 @@ body{font-family:var(--font);font-size:15px;color:var(--text1);-webkit-font-smoo
 
 <div id="m-invite" class="mbg hidden"><div class="modal"><div class="mx" onclick="closeM('m-invite')">✕</div><div class="mhead"><h2>Invite People</h2><p>Share this code with friends.</p></div><div class="mbody"><label class="flbl">Invite Code</label><div style="display:flex;gap:8px"><input class="finput" id="inv-code" readonly style="flex:1;font-family:var(--mono)"/><button class="btn" onclick="copyInv()">Copy</button></div></div></div></div>
 
-<div id="m-settings" class="mbg hidden"><div class="modal" style="max-width:480px"><div class="mx" onclick="closeM('m-settings')">✕</div><div class="mhead"><h2>⚙️ Settings</h2></div><div class="mbody"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg2);border-radius:8px;margin-bottom:20px"><div class="av-wrap" onclick="pickAvatar()" title="Click to change profile picture"><div class="ava" id="set-av" style="width:60px;height:60px;font-size:22px;border-radius:50%"></div><div class="av-edit-ring">📷<span style="font-size:9px">CHANGE</span></div></div><input type="file" id="av-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(event)"/><div><div style="font-size:18px;font-weight:800" id="set-nm">Username</div><div style="color:var(--text3);font-size:13px" id="set-em"></div></div></div><div class="fw"><label class="flbl">Display Name</label><input class="finput" id="set-uname" maxlength="32"/></div><div class="fw"><label class="flbl">Status</label><select class="finput" id="set-status"><option value="ONLINE">🟢 Online</option><option value="IDLE">🌙 Idle</option><option value="DND">⛔ Do Not Disturb</option><option value="INVISIBLE">⚫ Invisible</option></select></div></div><div class="mfoot" style="justify-content:space-between"><button class="btn red" onclick="doLogout()">Log Out</button><div style="display:flex;gap:8px"><button class="bghost" onclick="closeM('m-settings')">Cancel</button><button class="btn" onclick="saveSett()">Save</button></div></div></div></div>
+<div id="m-settings" class="mbg hidden"><div class="modal" style="max-width:480px"><div class="mx" onclick="closeM('m-settings')">✕</div><div class="mhead"><h2>⚙️ Settings</h2></div><div class="mbody"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg2);border-radius:8px;margin-bottom:20px"><div class="av-wrap" onclick="pickAvatar()" title="Click to change profile picture"><div class="ava" id="set-av" style="width:60px;height:60px;font-size:22px;border-radius:50%"></div><div class="av-edit-ring">📷<span style="font-size:9px">CHANGE</span></div></div><input type="file" id="av-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(event)"/><div><div style="font-size:18px;font-weight:800" id="set-nm">Username</div><div style="color:var(--text3);font-size:13px" id="set-em"></div></div></div><div class="fw"><label class="flbl">Display Name</label><input class="finput" id="set-uname" maxlength="32"/></div><div class="fw"><label class="flbl">Status</label><select class="finput" id="set-status"><option value="ONLINE">🟢 Online</option><option value="IDLE">🌙 Idle</option><option value="DND">⛔ Do Not Disturb</option><option value="INVISIBLE">⚫ Invisible</option></select></div><div class="fw"><label class="flbl">Theme</label><div class="theme-opts"><div class="theme-opt" id="th-dark" onclick="setTheme('dark')"><div class="to-ico">🌑</div><div class="to-lbl">Dark</div></div><div class="theme-opt" id="th-light" onclick="setTheme('light')"><div class="to-ico">☀️</div><div class="to-lbl">Light</div></div><div class="theme-opt" id="th-void" onclick="setTheme('void')"><div class="to-ico">⬛</div><div class="to-lbl">Void</div></div></div></div></div><div class="mfoot" style="justify-content:space-between"><button class="btn red" onclick="doLogout()">Log Out</button><div style="display:flex;gap:8px"><button class="bghost" onclick="closeM('m-settings')">Cancel</button><button class="btn" onclick="saveSett()">Save</button></div></div></div></div>
 
 <div id="m-del" class="mbg hidden"><div class="modal" style="max-width:400px"><div class="mx" onclick="closeM('m-del')">✕</div><div class="mhead"><h2>Delete Message</h2><p>Are you sure? This cannot be undone.</p></div><div class="mfoot"><button class="bghost" onclick="closeM('m-del')">Cancel</button><button class="btn red" onclick="confirmDel()">Delete</button></div></div></div>
 
@@ -537,7 +560,7 @@ function loadMe(uid,cb){
   });
 }
 
-function boot(){updatePanel();startPres();loadSrvs(function(){loadDMs(function(){renderRail();goHome();});})}
+function boot(){loadSavedTheme();updatePanel();startPres();loadSrvs(function(){loadDMs(function(){renderRail();goHome();});})}
 
 // ─── AUTH ──────────────────────────────────────────────────────────────
 function swap(toL){toL?(show('login-card'),hide('reg-card')):(hide('login-card'),show('reg-card'));}
@@ -1083,6 +1106,23 @@ function decFriend(tid){DB.ref('friends/'+MYUID+'/'+tid).remove();DB.ref('friend
 function rmFriend(tid,uname){if(!confirm('Remove '+uname+' from friends?'))return;DB.ref('friends/'+MYUID+'/'+tid).remove();DB.ref('friends/'+tid+'/'+MYUID).remove();toast('Friend removed','ok');ftab('all');}
 
 // ─── SETTINGS ─────────────────────────────────────────────────────────
+function setTheme(t){
+  document.body.classList.remove('theme-light','theme-void');
+  if(t==='light') document.body.classList.add('theme-light');
+  if(t==='void')  document.body.classList.add('theme-void');
+  localStorage.setItem('cc-theme', t);
+  // Update active pill
+  ['dark','light','void'].forEach(function(name){
+    var el=document.getElementById('th-'+name);
+    if(el) el.classList.toggle('active', name===t);
+  });
+}
+
+function loadSavedTheme(){
+  var saved=localStorage.getItem('cc-theme')||'dark';
+  setTheme(saved);
+}
+
 function openSettings(){
   if(!ME)return;
   setAv(g('set-av'),ME,60);
@@ -1091,12 +1131,18 @@ function openSettings(){
   g('set-em').textContent=AUTH.currentUser?AUTH.currentUser.email:'';
   g('set-uname').value=ME.username;
   g('set-status').value=ME.status||'ONLINE';
+  // Highlight current theme pill
+  var cur=localStorage.getItem('cc-theme')||'dark';
+  ['dark','light','void'].forEach(function(name){
+    var el=document.getElementById('th-'+name);
+    if(el) el.classList.toggle('active', name===cur);
+  });
 }
 function pickAvatar(){ g('av-file-input').click(); }
 function handleAvatarFile(e){
   var file=e.target.files&&e.target.files[0];
   if(!file)return;
-  if(file.size>2*1024*1024){toast('Image too large — max 2MB','err');return;}
+  if(file.size>3*1024*1024){toast('Image too large — max 3MB','err');return;}
   var reader=new FileReader();
   reader.onload=function(ev){
     var b64=ev.target.result;
