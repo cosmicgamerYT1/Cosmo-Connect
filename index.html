@@ -401,6 +401,55 @@ body{font-family:var(--font);font-size:15px;color:var(--text1);-webkit-font-smoo
 
 <div id="m-del" class="mbg hidden"><div class="modal" style="max-width:400px"><div class="mx" onclick="closeM('m-del')">✕</div><div class="mhead"><h2>Delete Message</h2><p>Are you sure? This cannot be undone.</p></div><div class="mfoot"><button class="bghost" onclick="closeM('m-del')">Cancel</button><button class="btn red" onclick="confirmDel()">Delete</button></div></div></div>
 
+<!-- Server Settings Modal -->
+<div id="m-srvsett" class="mbg hidden">
+  <div class="modal" style="max-width:480px">
+    <div class="mx" onclick="closeM('m-srvsett')">✕</div>
+    <div class="mhead">
+      <h2>⚙️ Server Settings</h2>
+      <p id="srvsett-subtitle">Manage your server</p>
+    </div>
+    <div class="mbody">
+      <!-- Server icon preview + upload -->
+      <div style="display:flex;align-items:center;gap:20px;padding:16px;background:var(--bg2);border-radius:8px;margin-bottom:20px">
+        <div class="av-wrap" onclick="pickSrvIcon()" title="Click to change server picture" style="flex-shrink:0">
+          <div id="srvsett-ico" style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;background:var(--bg5);overflow:hidden;position:relative"></div>
+          <div class="av-edit-ring" style="border-radius:50%">📷<span style="font-size:9px">CHANGE</span></div>
+        </div>
+        <input type="file" id="srv-icon-input" accept="image/*" style="display:none" onchange="handleSrvIcon(event)"/>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text1)" id="srvsett-nm-preview">Server Name</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Click the image to change it</div>
+        </div>
+      </div>
+
+      <!-- Server name -->
+      <div class="fw">
+        <label class="flbl">Server Name</label>
+        <input class="finput" id="srvsett-name" placeholder="My Awesome Server" maxlength="100"/>
+      </div>
+
+      <!-- Invite code -->
+      <div class="fw">
+        <label class="flbl">Invite Code</label>
+        <div style="display:flex;gap:8px">
+          <input class="finput" id="srvsett-invite" readonly style="flex:1;font-family:var(--mono);letter-spacing:.05em"/>
+          <button class="btn" onclick="copySrvInvite()" style="flex-shrink:0">Copy</button>
+          <button class="btn" style="flex-shrink:0;background:var(--bg5);color:var(--text1)" onclick="regenInvite()" title="Generate a new invite code">↻ New</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Share this code so others can join your server.</div>
+      </div>
+    </div>
+    <div class="mfoot" style="justify-content:space-between">
+      <button class="btn red" onclick="if(confirm('Delete this server? Cannot be undone.'))delSrv(SRVSETT_ID)">Delete Server</button>
+      <div style="display:flex;gap:8px">
+        <button class="bghost" onclick="closeM('m-srvsett')">Cancel</button>
+        <button class="btn" onclick="saveSrvSett()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Profile Card Modal -->
 <div id="m-profile" class="mbg hidden">
   <div class="modal" style="max-width:380px;overflow:hidden">
@@ -462,6 +511,108 @@ function setErr(id,m){var el=g(id);if(el)el.textContent=m;}
 function clrErrs(){['le-e','lp-e','re-e','ru-e','rp-e'].forEach(function(i){setErr(i,'');});}
 function setLd(id,on,t){var b=g(id);if(b){b.disabled=on;b.textContent=t;}}
 function cleanRefs(){MSG_REFS.forEach(function(r){r.off();});MSG_REFS=[];TYP_REFS.forEach(function(r){r.off();});TYP_REFS=[];clearTimeout(TYP_TMR);}
+
+// ── Server settings state ────────────────────────────────────────────
+var SRVSETT_ID = null;
+var SRVSETT_NEW_ICON = null; // base64 of pending icon upload
+
+function openSrvSett(srvId){
+  var s = SERVERS.find(function(x){ return x.id === srvId; });
+  if(!s) return;
+  SRVSETT_ID = srvId;
+  SRVSETT_NEW_ICON = null;
+
+  // Populate icon preview
+  var icoEl = document.getElementById('srvsett-ico');
+  icoEl.innerHTML = '';
+  if(s.iconUrl){
+    var img = document.createElement('img');
+    img.src = s.iconUrl;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    icoEl.appendChild(img);
+  } else {
+    icoEl.style.background = s.iconColor || 'var(--bg5)';
+    icoEl.textContent = ini(s.name);
+  }
+
+  // Populate fields
+  document.getElementById('srvsett-nm-preview').textContent = s.name;
+  document.getElementById('srvsett-name').value = s.name;
+  document.getElementById('srvsett-invite').value = s.inviteCode || '';
+  document.getElementById('srvsett-subtitle').textContent = s.name;
+
+  openM('m-srvsett');
+}
+
+function pickSrvIcon(){
+  document.getElementById('srv-icon-input').click();
+}
+
+function handleSrvIcon(e){
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  if(file.size > 3 * 1024 * 1024){ toast('Image too large — max 3MB', 'err'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    SRVSETT_NEW_ICON = ev.target.result;
+    // Show preview immediately
+    var icoEl = document.getElementById('srvsett-ico');
+    icoEl.innerHTML = '';
+    var img = document.createElement('img');
+    img.src = SRVSETT_NEW_ICON;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    icoEl.appendChild(img);
+    toast('Picture selected — click Save Changes to apply', 'info');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function saveSrvSett(){
+  if(!SRVSETT_ID) return;
+  var newName = (document.getElementById('srvsett-name').value || '').trim();
+  if(!newName){ toast('Server name cannot be empty', 'err'); return; }
+
+  var updates = { name: newName };
+  if(SRVSETT_NEW_ICON) updates.iconUrl = SRVSETT_NEW_ICON;
+
+  DB.ref('servers/' + SRVSETT_ID).update(updates, function(err){
+    if(err){ toast('Save failed: ' + err.message, 'err'); return; }
+    // Update local SERVERS array
+    var idx = SERVERS.findIndex(function(x){ return x.id === SRVSETT_ID; });
+    if(idx >= 0){
+      SERVERS[idx].name = newName;
+      if(SRVSETT_NEW_ICON) SERVERS[idx].iconUrl = SRVSETT_NEW_ICON;
+    }
+    // Update sidebar header if this is the active server
+    if(ACT_SRV === SRVSETT_ID){
+      document.getElementById('stitle').textContent = newName;
+    }
+    // Re-render the rail so the icon updates
+    renderRail();
+    SRVSETT_NEW_ICON = null;
+    closeM('m-srvsett');
+    toast('Server updated!', 'ok');
+  });
+}
+
+function copySrvInvite(){
+  var code = document.getElementById('srvsett-invite').value;
+  if(!code) return;
+  navigator.clipboard.writeText(code).then(function(){ toast('Invite code copied!', 'ok'); });
+}
+
+function regenInvite(){
+  if(!SRVSETT_ID) return;
+  var newCode = Math.random().toString(36).slice(2, 10).toUpperCase();
+  DB.ref('servers/' + SRVSETT_ID).update({ inviteCode: newCode }, function(err){
+    if(err){ toast('Failed to regenerate code', 'err'); return; }
+    var idx = SERVERS.findIndex(function(x){ return x.id === SRVSETT_ID; });
+    if(idx >= 0) SERVERS[idx].inviteCode = newCode;
+    document.getElementById('srvsett-invite').value = newCode;
+    toast('New invite code generated!', 'ok');
+  });
+}
 
 function setAv(el,u,sz){
   if(!el)return;
@@ -676,7 +827,16 @@ function renderRail(){
     var wrap=mk('div','tipwrap swrap'+(ACT_SRV===s.id?' act':''));
     var pill=mk('div','spill'),ico=mk('div','sico');
     ico.style.background=(ACT_SRV===s.id)?'var(--accent)':(s.iconColor||'var(--bg4)');
-    ico.textContent=ini(s.name);ico.title=s.name;
+    if(s.iconUrl){
+      ico.innerHTML='';
+      var rimg=document.createElement('img');rimg.src=s.iconUrl;
+      rimg.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit';
+      rimg.onerror=function(){ico.removeChild(rimg);ico.textContent=ini(s.name);};
+      ico.appendChild(rimg);
+    } else {
+      ico.textContent=ini(s.name);
+    }
+    ico.title=s.name;
     ico.onclick=(function(sid){return function(){selSrv(sid);};})(s.id);
     ico.oncontextmenu=(function(sv){return function(e){e.preventDefault();showSrvCtx(e,sv);};})(s);
     var tip=mk('div','tip');tip.textContent=s.name;
@@ -992,7 +1152,7 @@ function showSrvCtx(e,s){
   var own=s.ownerId===MYUID,m=mk('div','ctx');
   m.style.cssText='position:fixed;left:'+e.clientX+'px;top:'+e.clientY+'px;z-index:999';
   var h='<div class="ctxi" id="_c1">Invite People</div>';
-  if(own)h+='<div class="ctxi" id="_c2">Create Channel</div><div class="ctxsep"></div><div class="ctxi red" id="_c3">Delete Server</div>';
+  if(own)h+='<div class="ctxi" id="_c2">Create Channel</div><div class="ctxi" id="_c5">Server Settings</div><div class="ctxsep"></div><div class="ctxi red" id="_c3">Delete Server</div>';
   else h+='<div class="ctxsep"></div><div class="ctxi red" id="_c4">Leave Server</div>';
   m.innerHTML=h;document.body.appendChild(m);
   var c;
@@ -1000,16 +1160,18 @@ function showSrvCtx(e,s){
   c=m.querySelector('#_c2');if(c)c.onclick=function(){openM('m-crtch');m.remove();};
   c=m.querySelector('#_c3');if(c)c.onclick=function(){delSrv(s.id);m.remove();};
   c=m.querySelector('#_c4');if(c)c.onclick=function(){leaveSrv(s.id);m.remove();};
+  c=m.querySelector('#_c5');if(c)c.onclick=(function(srv){return function(){openSrvSett(srv.id);m.remove();};})(s);
   setTimeout(function(){document.addEventListener('click',function rm(){if(m.parentNode)m.remove();document.removeEventListener('click',rm);},{once:true});},50);
 }
 
 function showSrvMenu(s){
   var m=mk('div','ctx');m.style.cssText='position:fixed;left:80px;top:48px;z-index:999;min-width:200px';
-  m.innerHTML='<div class="ctxi" id="_s1">Invite People</div><div class="ctxi" id="_s2">Create Channel</div><div class="ctxsep"></div><div class="ctxi red" id="_s3">Delete Server</div>';
+  m.innerHTML='<div class="ctxi" id="_s1">Invite People</div><div class="ctxi" id="_s2">Create Channel</div><div class="ctxi" id="_s4">Server Settings</div><div class="ctxsep"></div><div class="ctxi red" id="_s3">Delete Server</div>';
   document.body.appendChild(m);
   m.querySelector('#_s1').onclick=function(){openInvite();m.remove();};
   m.querySelector('#_s2').onclick=function(){openM('m-crtch');m.remove();};
   m.querySelector('#_s3').onclick=function(){delSrv(s.id);m.remove();};
+  m.querySelector('#_s4').onclick=(function(srv){return function(){openSrvSett(srv.id);m.remove();};})(s);
   setTimeout(function(){document.addEventListener('click',function rm(){if(m.parentNode)m.remove();document.removeEventListener('click',rm);},{once:true});},50);
 }
 
